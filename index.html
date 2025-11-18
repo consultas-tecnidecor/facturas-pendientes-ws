@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title>Consulta de Facturas - Tecnidecor</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <style>
+            :root {
+                --primary: #009688;
+                --primary-dark: #00796B;
+                --bg: #f5f5f5;
+                --text: #333;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .card {
+                background: #fff;
+                padding: 1.8rem 1.4rem;
+                border-radius: 12px;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                max-width: 420px;
+                width: 100%;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+                margin: 0 0 0.6rem;
+                color: var(--primary-dark);
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 1.4rem;
+            }
+
+            #status-msg {
+                font-size: 0.95rem;
+                margin: 0.6rem 0 1rem;
+            }
+
+            .small {
+                font-size: 0.78rem;
+                color: #777;
+                margin-top: 0.8rem;
+            }
+
+            .btn-wa {
+                display: none;
+                margin-top: 1.2rem;
+                padding: 0.6rem 1.2rem;
+                border-radius: 999px;
+                border: none;
+                cursor: pointer;
+                background: #25D366;
+                color: #fff;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+                box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+            }
+
+            .btn-wa:hover {
+                background: #1ebe5b;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(37, 211, 102, 0.45);
+            }
+
+            .spinner {
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                border: 3px solid rgba(0,0,0,0.08);
+                border-top-color: var(--primary);
+                animation: spin 0.75s linear infinite;
+                margin: 0 auto 0.6rem;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* NUEVO: Badge de modo desarrollo */
+            .dev-badge {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: #ff9800;
+                color: #fff;
+                padding: 0.4rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                box-shadow: 0 3px 8px rgba(255, 152, 0, 0.4);
+                z-index: 9999;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- NUEVO: Badge que aparece solo en modo desarrollo -->
+        <div class="dev-badge" id="dev-badge" style="display: none;">
+            🛠️ MODO DESARROLLO
+        </div>
+
+        <div class="card">
+            <h1>Consulta de facturas</h1>
+            <p class="subtitle">Tecnidecor - Estado de cartera vía WhatsApp</p>
+
+            <div class="spinner" id="spinner"></div>
+            <p id="status-msg">Preparando tu consulta…</p>
+
+            <a id="back-to-wa" class="btn-wa" href="#" target="_blank" rel="noopener noreferrer">
+                Volver a WhatsApp
+            </a>
+
+            <p class="small">
+                Puedes cerrar esta ventana después de que recibas el mensaje en tu WhatsApp.
+            </p>
+        </div>
+
+        <script>
+            // ========================================
+            // 🚩 CONFIGURACIÓN: MODO DESARROLLO/PRODUCCIÓN
+            // ========================================
+            const IS_DEVELOPMENT = true; // ⚠️ Cambiar a false para producción
+            // ========================================
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const statusEl = document.getElementById("status-msg");
+                const backLink = document.getElementById("back-to-wa");
+                const spinner  = document.getElementById("spinner");
+                const devBadge = document.getElementById("dev-badge");
+
+                // Mostrar badge si estamos en modo desarrollo
+                if (IS_DEVELOPMENT && devBadge) {
+                    devBadge.style.display = "block";
+                }
+
+                const params = new URLSearchParams(window.location.search);
+                const phone = params.get("phone");
+
+                if (!phone) {
+                    if (spinner) spinner.style.display = "none";
+                    if (statusEl) {
+                        statusEl.textContent = "No se recibió un número de teléfono válido en la URL.";
+                    }
+                    console.warn("No 'phone' param found in URL");
+                    return;
+                }
+
+                console.log(`[${IS_DEVELOPMENT ? 'DEV' : 'PROD'}] Phone detected:`, phone);
+
+                if (statusEl) {
+                    statusEl.textContent = "Consultando tus facturas pendientes…";
+                }
+
+                // ========================================
+                // MODO DESARROLLO: Simular sin llamar a Zoho
+                // ========================================
+                if (IS_DEVELOPMENT) {
+                    console.log("🛠️ MODO DESARROLLO: No se realizará la petición real a Zoho.");
+                    console.log("Phone que se usaría:", phone);
+                    
+                    // Simular un delay de 2 segundos como si fuera la petición real
+                    setTimeout(() => {
+                        if (spinner) spinner.style.display = "none";
+
+                        if (statusEl) {
+                            statusEl.innerHTML = 
+                                "✅ <strong>MODO DESARROLLO</strong><br>" +
+                                "Consulta simulada exitosamente.<br>" +
+                                "En producción, se enviaría WhatsApp a: " + phone;
+                        }
+
+                        if (backLink) {
+                            const waUrl = "https://wa.me/" + encodeURIComponent(phone);
+                            backLink.href = waUrl;
+                            backLink.style.display = "inline-block";
+                        }
+
+                        console.log("✅ Simulación completada. No se realizó ninguna petición HTTP.");
+                    }, 2000);
+
+                    return; // Detener ejecución aquí en modo desarrollo
+                }
+
+                // ========================================
+                // MODO PRODUCCIÓN: Llamada real a Zoho
+                // ========================================
+                console.log("🚀 MODO PRODUCCIÓN: Realizando petición a Zoho...");
+
+                const fnUrl = "https://www.zohoapis.com/crm/v7/functions/chatbot_get_facturas_pendientes_cliente/actions/execute";
+                const url =
+                    fnUrl +
+                    "?auth_type=apikey" +
+                    "&zapikey=" + encodeURIComponent("1003.156f02676916376550dce4527a52b983.9070945e78e89f019ad983819b61985f") +
+                    "&phone=" + encodeURIComponent(phone);
+
+                fetch(url, { method: "POST" })
+                    .then((resp) => {
+                        console.log("Zoho function HTTP status:", resp.status);
+                        if (!resp.ok) {
+                            throw new Error("Zoho responded with status " + resp.status);
+                        }
+                        return resp.json(); // Opcional: parsear respuesta
+                    })
+                    .then((data) => {
+                        console.log("Zoho response:", data);
+                        if (spinner) spinner.style.display = "none";
+
+                        if (statusEl) {
+                            statusEl.textContent =
+                                "Consulta realizada. En unos segundos recibirás el detalle de tus facturas en tu WhatsApp.";
+                        }
+
+                        if (backLink) {
+                            const waUrl = "https://wa.me/" + encodeURIComponent(phone);
+                            backLink.href = waUrl;
+                            backLink.style.display = "inline-block";
+                        }
+
+                        // Redirección automática opcional:
+                        setTimeout(() => {
+                            if (backLink && backLink.href) {
+                                window.location.href = backLink.href;
+                            }
+                        }, 2500);
+                    })
+                    .catch((err) => {
+                        console.error("Error calling Zoho function:", err);
+                        if (spinner) spinner.style.display = "none";
+
+                        if (statusEl) {
+                            statusEl.textContent =
+                                "Hubo un problema al procesar tu consulta. Intenta más tarde o contacta con un asesor.";
+                        }
+                    });
+            });
+        </script>
+    </body>
+</html>
