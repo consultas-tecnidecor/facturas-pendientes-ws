@@ -142,6 +142,7 @@
             // 🚩 CONFIGURACIÓN: MODO DESARROLLO/PRODUCCIÓN
             // ========================================
             const IS_DEVELOPMENT = true; // ⚠️ Cambiar a false para producción
+            const phoneTaecnidecor = "3148626987"; // Número de WhatsApp de Tecnidecor para modo desarrollo
             // ========================================
 
             document.addEventListener("DOMContentLoaded", () => {
@@ -192,7 +193,7 @@
                         }
 
                         if (backLink) {
-                            const waUrl = "https://wa.me/" + encodeURIComponent(phone);
+                            const waUrl = "https://wa.me/" + encodeURIComponent("57" + phoneTaecnidecor);
                             backLink.href = waUrl;
                             backLink.style.display = "inline-block";
                         }
